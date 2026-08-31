@@ -42,3 +42,4 @@ A interface gráfica busca explorar o máximo da ferramenta, sem focar em casos 
 
 ## Executando o projeto
 Para maior facilidade, o projeto foi condensado em um arquivo `docker-compose.yml`.
+
