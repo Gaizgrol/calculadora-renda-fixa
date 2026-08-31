@@ -23,7 +23,7 @@ Ferramenta simples para cálculo de fluxos de renda fixa, com suporte a operaç�
 ## Projeto
 
 O projeto é separado em três partes:
-- Motor de cálculo
+- [Motor de cálculo](./calculadora-renda-fixa/)
 - API HTTP
 - Interface gráfica
 
