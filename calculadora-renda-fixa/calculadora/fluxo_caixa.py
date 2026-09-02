@@ -123,14 +123,14 @@ class FluxoCaixa:
     Classe auxiliar para distribuição, controle e agregação das movimentações no eixo temporal.
     """
 
-    @property
-    def unidade_tempo(self) -> str:
-        """
-        Unidade arbitrária de tempo para detalhar a menor unidade de tempo do fluxo de caixa.
+    # @property
+    # def unidade_tempo(self) -> str:
+    #     """
+    #     Unidade arbitrária de tempo para detalhar a menor unidade de tempo do fluxo de caixa.
         
-        Exemplo: `"DC"`, `"Dias úteis"`, `"Mês"`, `"ANO"`
-        """
-        return self._unidade_tempo
+    #     Exemplo: `"DC"`, `"Dias úteis"`, `"Mês"`, `"ANO"`
+    #     """
+    #     return self._unidade_tempo
 
     @property
     def rotulos_movimentacoes(self) -> dict[int, str]:
@@ -162,10 +162,10 @@ class FluxoCaixa:
         self,
         *,
         movimentacoes: list[MovimentacaoCaixa] = [],
-        unidade_tempo: str = 'DU',
+        # unidade_tempo: str = 'DU',
         rotulos_movimentacoes: dict[int, str] = {},
     ):
-        self._unidade_tempo = unidade_tempo
+        # self._unidade_tempo = unidade_tempo
         self._rotulos_movimentacoes = {**rotulos_movimentacoes}
         self._movs = {}
         for movimentacao in movimentacoes:
@@ -203,6 +203,6 @@ class FluxoCaixa:
     def __repr__(self) -> str:
         return self.__str__()
 
-    _unidade_tempo: str
+    # _unidade_tempo: str
     _rotulos_movimentacoes: dict[int, str]
     _movs: dict[int, MovimentacoesAgregadas]
