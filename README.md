@@ -4,6 +4,7 @@
 
 Ferramenta simples para cálculo de fluxos de renda fixa, com suporte a operações básicas:
 
+- Juros simples e compostos
 - Valor presente
 - Valor futuro
 - TIR
