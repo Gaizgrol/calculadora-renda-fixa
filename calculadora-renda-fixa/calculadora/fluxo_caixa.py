@@ -162,7 +162,7 @@ class FluxoCaixa:
         self,
         *,
         movimentacoes: list[MovimentacaoCaixa] = [],
-        unidade_tempo: str = 'T',
+        unidade_tempo: str = 'DU',
         rotulos_movimentacoes: dict[int, str] = {},
     ):
         self._unidade_tempo = unidade_tempo
