@@ -158,6 +158,13 @@ class FluxoCaixa:
         """
         return {**self._movs}
 
+    @property
+    def total(self) -> Decimal:
+        somatorio = ZERO
+        for mov in self.movimentacoes:
+            somatorio += mov.valor
+        return somatorio
+
     def __init__(
         self,
         *,
@@ -196,6 +203,9 @@ class FluxoCaixa:
         mov.remover(movimentacao)
         if len(mov.movimentacoes) == 0:
             del self._movs[t]
+
+    def consultar(self, tempo: int) -> MovimentacoesAgregadas | None:
+        return None if tempo not in self._movs else self._movs[tempo]
 
     def __str__(self) -> str:
         return f'FluxoCaixa(unidades_tempo={len(self.movimentacoes_por_tempo)}, movimentacoes={len(self.movimentacoes)})'
