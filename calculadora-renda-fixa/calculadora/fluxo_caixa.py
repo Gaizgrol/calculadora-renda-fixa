@@ -1,6 +1,8 @@
 from decimal import Decimal
+from typing import Mapping
 
-from .constantes import ZERO
+from .constantes import UM, ZERO
+from .juros import Juros, JurosSimples, JurosCompostos
 
 class MovimentacaoCaixa:
     """
@@ -161,8 +163,8 @@ class FluxoCaixa:
     @property
     def total(self) -> Decimal:
         somatorio = ZERO
-        for mov in self.movimentacoes:
-            somatorio += mov.valor
+        for agg in self.movimentacoes_por_tempo.values():
+            somatorio += agg.total
         return somatorio
 
     def __init__(
@@ -205,7 +207,71 @@ class FluxoCaixa:
             del self._movs[t]
 
     def consultar(self, tempo: int) -> MovimentacoesAgregadas | None:
+        """
+        Consulta todas as movimentações realizadas em um determinado ponto do tempo.
+        """
         return None if tempo not in self._movs else self._movs[tempo]
+
+    def valor_presente(
+        self,
+        taxa_juros: Juros | Mapping[int, Juros]
+    ) -> FluxoCaixa:
+        """
+        Gera um novo fluxo de caixa, com os valores de cada movimentação atualizados
+        para valor presente de acordo com a taxa de juros acruada no período. Aceita
+        uma taxa de juros fixa ou uma variação temporal de juros. Os juros podem ser
+        simples ou compostos. Para chegar no valor presente final, sem detalhamento,
+        é só acessar a propriedade `.total` do fluxo de caixa gerado.
+        """
+
+        mapeamento_juros: dict[int, Juros]
+        if type(taxa_juros) == dict:
+            if 0 not in taxa_juros:
+                raise ValueError('A taxa de juros inicial (tempo 0) precisa ser informada.')
+            mapeamento_juros = taxa_juros
+        elif isinstance(taxa_juros, Juros):
+            mapeamento_juros = { 0: taxa_juros }
+        else:
+            raise TypeError('Você só pode passar um valor de Juros ou um mapeamento informando a partir de qual tempo determinada taxa de juros começa a valer.')
+
+        movs_agg = self.movimentacoes_por_tempo
+
+        t_eventos_alteracao_juros = set(mapeamento_juros.keys())
+        t_eventos_fluxo_caixa = set(movs_agg.keys())
+        t_eventos = sorted(t_eventos_alteracao_juros | t_eventos_fluxo_caixa)
+
+        fc_vp = FluxoCaixa()
+
+        ultimo_t_juros_acruados = 0
+        juros_validos_ate_agora = mapeamento_juros[0]
+        juros_acumulados_indice = UM
+        for t in t_eventos:
+            # Acrua juros entre períodos de eventos
+            t_acruando_juros = t - ultimo_t_juros_acruados
+            juros = (
+                juros_validos_ate_agora
+                .multiplicar_unidade_tempo(fator=t_acruando_juros)
+            )
+            juros_acumulados_indice = (
+                juros_acumulados_indice * juros.taxa(indice=True) if isinstance(juros, JurosCompostos) else
+                juros_acumulados_indice + juros.taxa()            if isinstance(juros, JurosSimples) else
+                juros_acumulados_indice # ?
+            )
+            ultimo_t_juros_acruados = t
+
+            # Atualiza qual taxa de juros usar após a mudança
+            alteracao_juros = mapeamento_juros.get(t)
+            if alteracao_juros:
+                juros_validos_ate_agora = alteracao_juros
+
+            # Calcula valor presente para cada movimentação do fluxo de caixa
+            pgto_fluxo_caixa = movs_agg.get(t)
+            if pgto_fluxo_caixa:
+                for mov in pgto_fluxo_caixa.movimentacoes:
+                    valor_presente = mov.valor / juros_acumulados_indice
+                    fc_vp.incluir(MovimentacaoCaixa(tempo=t, valor=valor_presente, rotulo_id=mov.rotulo_id))
+
+        return fc_vp
 
     def __str__(self) -> str:
         return f'FluxoCaixa(unidades_tempo={len(self.movimentacoes_por_tempo)}, movimentacoes={len(self.movimentacoes)})'
